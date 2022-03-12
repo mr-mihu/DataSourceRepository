@@ -21,6 +21,17 @@
       "describe": "默认",
       "publicAt": 1645415238427,
       "downloadUrl": "/datasource/202202121320/sample2/CustomDataSource2.ads"
+    },
+    {
+      "name": "henniu-sese",
+      "interfaceVersion": "202202121320",
+      "versionName": "0.0.1",
+      "versionCode": 1,
+      "author": "MR-mihu",
+      "icon": "",
+      "describe": "默认",
+      "publicAt": 1647065993000,
+      "downloadUrl": "/datasource/202202121320/mr-mihu/henniu-sese.ads"
     }
   ]
 }
