@@ -1,7 +1,6 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.PageNumberBean
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IMonthAnimeModel
 import org.jsoup.select.Elements
@@ -11,7 +10,7 @@ class CustomMonthAnimeModel : IMonthAnimeModel {
         partUrl: String
     ): Pair<ArrayList<Any>, PageNumberBean?> {
         val monthAnimeList: ArrayList<Any> = ArrayList()
-        val url = Api.MAIN_URL + partUrl
+        val url = CustomConst.MAIN_URL + partUrl
         var pageNumberBean: PageNumberBean? = null
         val document = JsoupUtil.getDocument(url)
         val area: Elements = document.getElementsByClass("area")

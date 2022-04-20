@@ -11,67 +11,48 @@ import com.skyd.imomoe.route.processor.RankActivityProcessor
 import com.skyd.imomoe.route.processor.SearchActivityProcessor
 import com.skyd.imomoe.util.Util.getSubString
 import com.skyd.imomoe.util.showToast
-import java.net.MalformedURLException
-import java.net.URL
-
 
 class CustomRouter : IRouter {
     override fun route(uri: Uri, context: Context?): Boolean {
-        val const = CustomConst()
         val uriString = uri.toString()
         when {
-            uriString.startsWith(const.ANIME_DETAIL) -> {
+            uriString.startsWith(CustomConst.ANIME_DETAIL) -> {
                 DetailActivityProcessor.route.buildRouteUri {
                     appendQueryParameter("partUrl", uriString)
                 }.route(context)
                 return true
             }
-            uriString.startsWith(const.ANIME_SEARCH) -> {
-                val paramMap: HashMap<String, String> = HashMap()
-                try {
-                    URL(const.MAIN_URL + uriString).query?.let { query ->
-                        query.split("&").forEach { kv ->
-                            kv.split("=").let { v ->
-                                paramMap[v[0]] = v[1]
-                            }
-                        }
-                    }
-                } catch (e: MalformedURLException) {
-                    e.printStackTrace()
-                }
-                uriString.replace(const.ANIME_SEARCH, "").let {
-                    val keyword: String = paramMap["kw"] ?: ""
+            uriString.startsWith(CustomConst.ANIME_SEARCH) -> {
+                uriString.replace(CustomConst.ANIME_SEARCH, "").let {
+                    val keyword = it.replaceFirst(Regex("/.*"), "")
+                    val pageNumber = it.replaceFirst(Regex("($keyword/)|($keyword)"), "")
                     SearchActivityProcessor.route.buildRouteUri {
                         appendQueryParameter("keyword", keyword)
-                        appendQueryParameter("pageNumber", uriString)
+                        appendQueryParameter("pageNumber", pageNumber)
                     }.route(context)
                 }
                 return true
             }
-            uriString.startsWith(const.ANIME_RANK) -> {
+            uriString.startsWith(CustomConst.ANIME_RANK) -> {
                 RankActivityProcessor.route.route(context)
                 return true
             }
-            uriString.startsWith(const.ANIME_PLAY) -> {
-                val playCode = uriString.getSubString("\\/vp\\/", "\\.")[0].split("-")
+            uriString.startsWith(CustomConst.ANIME_PLAY) -> {
+                val playCode = uriString.getSubString("\\/v\\/", "\\.")[0].split("-")
                 if (playCode.size >= 2) {
                     var detailPartUrl =
-                        uriString.substringAfter(const.ANIME_DETAIL, "")
-                    detailPartUrl = const.ANIME_DETAIL + detailPartUrl
+                        uriString.substringAfter(CustomConst.ANIME_DETAIL, "")
+                    detailPartUrl = CustomConst.ANIME_DETAIL + detailPartUrl
                     PlayActivityProcessor.route.buildRouteUri {
                         appendQueryParameter(
                             "partUrl",
-                            uriString.substringBefore(const.ANIME_DETAIL)
+                            uriString.substringBefore(CustomConst.ANIME_DETAIL)
                         )
                         appendQueryParameter("detailPartUrl", detailPartUrl)
                     }.route(context)
                 } else {
                     "播放集数解析错误！".showToast()
                 }
-                return true
-            }
-            uriString.startsWith(const.ANIME_LINK) -> {
-                "暂不支持带有referer的外部浏览器跳转".showToast()
                 return true
             }
         }

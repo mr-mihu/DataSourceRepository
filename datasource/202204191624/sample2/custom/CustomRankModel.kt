@@ -1,7 +1,6 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.TabBean
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IRankModel
 import org.jsoup.select.Elements
@@ -18,15 +17,14 @@ class CustomRankModel : IRankModel {
     }
 
     private suspend fun getAllRankData() {
-        val const = CustomConst()
-        val document = JsoupUtil.getDocument(Api.MAIN_URL + const.ANIME_RANK)
+        val document = JsoupUtil.getDocument(CustomConst.MAIN_URL + CustomConst.ANIME_RANK)
         val areaChildren: Elements = document.select("[class=area]")[0].children()
         for (i in areaChildren.indices) {
             when (areaChildren[i].className()) {
                 "gohome" -> {
                     tabList.add(
                         tabList.size, TabBean(
-                            const.ANIME_RANK, "",
+                            CustomConst.ANIME_RANK, "",
                             areaChildren[i].select("h1").text()
                         )
                     )
@@ -37,7 +35,7 @@ class CustomRankModel : IRankModel {
 
     private suspend fun getWeekRankData() {
         bgTimes = 0
-        val url = Api.MAIN_URL
+        val url = CustomConst.MAIN_URL
         val document = JsoupUtil.getDocument(url)
         val areaChildren: Elements = document.select("[class=area]")[0].children()
         for (i in areaChildren.indices) {

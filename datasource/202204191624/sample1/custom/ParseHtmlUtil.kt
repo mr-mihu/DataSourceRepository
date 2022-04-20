@@ -1,16 +1,17 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.*
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.route.Router.buildRouteUri
 import com.skyd.imomoe.route.processor.ClassifyActivityProcessor
+import com.skyd.imomoe.route.processor.MonthAnimeActivityProcessor
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
+import java.util.ArrayList
 import java.net.URL
 
-object CustomParseHtmlUtil {
+object ParseHtmlUtil {
 
-    fun parseHeroWrap(element: Element, imageReferer: String): List<AnimeCover6Bean> {//banner
+    fun parseHeroWrap(element: Element, imageReferer: String): List<AnimeCover6Bean> {      //banner
         val list: MutableList<AnimeCover6Bean> = ArrayList()
         val liElements: Elements = element.select("[class=heros]").select("li")
         for (i in liElements.indices) {
@@ -35,44 +36,35 @@ object CustomParseHtmlUtil {
             }
             list.add(
                 AnimeCover6Bean(
-                    url, title, ImageBean("", cover, imageReferer),
-                    describe, AnimeEpisodeDataBean("", episodeTitle)
+                    url, title, ImageBean("", cover, imageReferer), describe,
+                    AnimeEpisodeDataBean("", episodeTitle)
                 )
             )
         }
         return list
     }
 
-    fun parseSearchList(element: Element): List<ClassifyBean> {
+    fun parseTers(element: Element): List<ClassifyBean> {
         val list: MutableList<ClassifyBean> = ArrayList()
-        val liElements: Elements = element.select("li")
-        for (i in liElements.indices) {
-            val pChildren: Elements = liElements[i].children()
+        val pElements: Elements = element.select("p")
+        for (i in pElements.indices) {
+            val pChildren: Elements = pElements[i].children()
             for (j in pChildren.indices) {
                 when (pChildren[j].tagName()) {
-                    "span" -> {
+                    "label" -> {
                         list.add(
-                            ClassifyBean(
-                                "",
-                                pChildren[j].text().replace("：", ""),
-                                ArrayList()
-                            )
+                            ClassifyBean("", pChildren[j].text(), ArrayList())
                         )
                     }
-                    "ul" -> {
+                    "a" -> {
                         if (list.size > 0) {
-                            val li = pChildren[j].select("li")
-                            val classifyDataList = list[list.size - 1].classifyDataList
-                            for (l in li.indices) {
-                                val a = li[l].select("a")
-                                classifyDataList.add(
-                                    ClassifyTab1Bean(
-                                        a.attr("href").replace(Api.MAIN_URL, ""),
-                                        a.attr("href"),
-                                        a.text()
-                                    )
+                            list[list.size - 1].classifyDataList.add(
+                                ClassifyTab1Bean(
+                                    pChildren[j].attr("href"),
+                                    CustomConst.MAIN_URL + pChildren[j].attr("href"),
+                                    pChildren[j].text()
                                 )
-                            }
+                            )
                         }
                     }
                 }
@@ -96,8 +88,8 @@ object CustomParseHtmlUtil {
                 val episodeUrl = liElements[j].select("span").select("a").attr("href")
                 liList.add(
                     AnimeCover10Bean(
-                        url, Api.MAIN_URL + url,
-                        title, AnimeEpisodeDataBean("", episodeTitle, episodeUrl)
+                        url, CustomConst.MAIN_URL + url, title,
+                        AnimeEpisodeDataBean(episodeUrl, episodeTitle)
                     )
                 )
             }
@@ -119,14 +111,38 @@ object CustomParseHtmlUtil {
                 val episodeUrl = liElements[j].select("span").select("a").attr("href")
                 liList.add(
                     AnimeCover12Bean(
-                        url, Api.MAIN_URL + url, title,
-                        AnimeEpisodeDataBean("", episodeTitle, episodeUrl)
+                        url, CustomConst.MAIN_URL + url, title,
+                        AnimeEpisodeDataBean(episodeUrl, episodeTitle),
                     )
                 )
             }
             ulList.add(liList)
         }
         return ulList
+    }
+
+    fun parseTopli2(element: Element): List<AnimeCover11Bean> {
+        val animeShowList: MutableList<AnimeCover11Bean> = ArrayList()
+        val elements: Elements = element.select("ul").select("li")
+        for (i in elements.indices) {
+            var url: String
+            var title: String
+            if (elements[i].select("a").size >= 2) {    //最近更新，显示地区的情况
+                url = elements[i].select("a")[1].attr("href")
+                title = elements[i].select("a")[1].text()
+                if (elements[i].select("span")[0].children().size == 0) {     //最近更新，不显示地区的情况
+                    url = elements[i].select("a")[0].attr("href")
+                    title = elements[i].select("a")[0].text()
+                }
+            } else {                                            //总排行榜
+                url = elements[i].select("a")[0].attr("href")
+                title = elements[i].select("a")[0].text()
+            }
+            animeShowList.add(
+                AnimeCover11Bean(route = url, url = CustomConst.MAIN_URL + url, title = title)
+            )
+        }
+        return animeShowList
     }
 
     fun parseTopli(element: Element): List<AnimeCover5Bean> {
@@ -159,129 +175,137 @@ object CustomParseHtmlUtil {
             }
             animeShowList.add(
                 AnimeCover5Bean(
-                    url, Api.MAIN_URL + url,
-                    title,
-                    AnimeAreaBean(ClassifyActivityProcessor.route.buildRouteUri {
-                        appendQueryParameter("partUrl", areaUrl)
-                        appendQueryParameter("classifyTitle", title)
-                    }.toString(), Api.MAIN_URL + areaUrl, areaTitle),
-                    date, AnimeEpisodeDataBean("", episodeTitle, episodeUrl),
+                    route = url, url = CustomConst.MAIN_URL + url,
+                    title = title,
+                    area = AnimeAreaBean(
+                        ClassifyActivityProcessor.route.buildRouteUri {
+                            appendQueryParameter("partUrl", areaUrl)
+                            appendQueryParameter("classifyTitle", title)
+                        }.toString(), CustomConst.MAIN_URL + areaUrl, areaTitle
+                    ),
+                    episodeClickable = AnimeEpisodeDataBean(episodeUrl, episodeTitle),
+                    date = date
                 )
             )
         }
         return animeShowList
     }
 
-    fun parseDnews(element: Element, imageReferer: String): List<AnimeCover4Bean> {
+    fun parseDnews2(element: Element, imageReferer: String): List<AnimeCover4Bean> {
         val animeShowList: MutableList<AnimeCover4Bean> = ArrayList()
         val elements: Elements = element.select("ul").select("li")
         for (i in elements.indices) {
             val url = elements[i].select("a").attr("href")
             var cover = elements[i].select("a").select("img").attr("src")
-            cover = getCoverUrl(cover, imageReferer)
+            cover = getCoverUrl(
+                cover,
+                imageReferer
+            )
             val title = elements[i].select("p").select("a").text()
             animeShowList.add(
                 AnimeCover4Bean(
-                    url, Api.MAIN_URL + url, title,
-                    ImageBean("", cover, imageReferer)
+                    route = MonthAnimeActivityProcessor.route.buildRouteUri {
+                        appendQueryParameter("partUrl", url)
+                    }.toString(),
+                    url = CustomConst.MAIN_URL + url,
+                    title = title,
+                    cover = ImageBean("", cover, imageReferer)
                 )
             )
         }
         return animeShowList
     }
 
-    fun parsePics(element: Element, imageReferer: String): List<AnimeCover3Bean> {//一周动漫排行榜
+    fun parsePics2(element: Element, imageReferer: String): List<AnimeCover3Bean> {      //一周动漫排行榜
         val animeCover3List: MutableList<AnimeCover3Bean> = ArrayList()
         val results: Elements = element.select("ul").select("li")
         for (i in results.indices) {
-            val cover = getCoverUrl(
-                results[i].select("a").select("img").attr("src"),
+            val cover = results[i].select("a")
+                .select("img").attr("src")
+            val title = results[i].select("h2")
+                .select("a").text()
+            val url = results[i].select("h2")
+                .select("a").attr("href")
+            val episode = results[i].select("span")
+                .select("font").text()
+            val types = results[i].select("span")[1].select("a")
+            val animeType: MutableList<AnimeTypeBean> = ArrayList()
+            for (j in types.indices) {
+                animeType.add(
+                    AnimeTypeBean(
+                        ClassifyActivityProcessor.route.buildRouteUri {
+                            appendQueryParameter(
+                                "partUrl",
+                                types[j].attr("href")
+                            )
+                            appendQueryParameter(
+                                "classifyTitle",
+                                types[j].text()
+                            )
+                        }.toString(),
+                        CustomConst.MAIN_URL + types[j].attr("href"),
+                        types[j].text()
+                    )
+                )
+            }
+            val describe = results[i].select("p").text()
+            animeCover3List.add(
+                AnimeCover3Bean(
+                    route = url,
+                    url = CustomConst.MAIN_URL + url,
+                    title = title,
+                    cover = ImageBean("", cover, imageReferer),
+                    episode = episode,
+                    animeType = animeType,
+                    describe = describe
+                )
+            )
+        }
+        return animeCover3List
+    }
+
+    fun parseLpic(element: Element, imageReferer: String): List<AnimeCover3Bean> {
+        val animeCover3List: MutableList<AnimeCover3Bean> = ArrayList()
+        val results: Elements = element.select("ul").select("li")
+        for (i in results.indices) {
+            var cover = results[i].select("a").select("img").attr("src")
+            cover = getCoverUrl(
+                cover,
                 imageReferer
             )
-            val title = results[i].select("h2").select("a").text()
-            val url = results[i].select("h2").select("a").attr("href")
-            val episode = results[i].select("span").select("font").text()
-            val types = results[i].select("span")[1].text().replace("类型：", "")
-                .replace("类型:", "").split(" ")
-            val animeType: MutableList<AnimeTypeBean> = ArrayList()
-            for (j in types.indices) {
-                if (types[j].isBlank()) continue
-                animeType.add(AnimeTypeBean("", "", types[j]))
-            }
-            val describe = results[i].select("p").text()
-            animeCover3List.add(
-                AnimeCover3Bean(
-                    url,
-                    Api.MAIN_URL + url,
-                    title,
-                    ImageBean("", cover, imageReferer),
-                    episode,
-                    describe,
-                    animeType
-                )
-            )
-        }
-        return animeCover3List
-    }
-
-    fun parseRankListLpic(element: Element, imageReferer: String): List<AnimeCover3Bean> {//排行榜
-        val animeCover3List: MutableList<AnimeCover3Bean> = ArrayList()
-        val results: Elements = element.select("ul").select("li")
-        for (i in results.indices) {
-            var cover = results[i].select("a").select("img").attr("src")
-            cover = getCoverUrl(cover, imageReferer)
             val title = results[i].select("h2").select("a").attr("title")
             val url = results[i].select("h2").select("a").attr("href")
             val episode = results[i].select("span").select("font").text()
-            val types = results[i].select("span")[2].text().replace("类型：", "")
-                .replace("类型:", "").split(" ")
+            val types = results[i].select("span")[1].select("a")
             val animeType: MutableList<AnimeTypeBean> = ArrayList()
             for (j in types.indices) {
-                if (types[j].isBlank()) continue
-                animeType.add(AnimeTypeBean("", "", types[j]))
-            }
-            val describe = results[i].select("p").text()
-            animeCover3List.add(
-                AnimeCover3Bean(
-                    url,
-                    Api.MAIN_URL + url,
-                    title,
-                    ImageBean("", cover, imageReferer),
-                    episode,
-                    describe,
-                    animeType
+                animeType.add(
+                    AnimeTypeBean(
+                        ClassifyActivityProcessor.route.buildRouteUri {
+                            appendQueryParameter(
+                                "partUrl",
+                                types[j].attr("href")
+                            )
+                            appendQueryParameter(
+                                "classifyTitle",
+                                types[j].text()
+                            )
+                        }.toString(),
+                        CustomConst.MAIN_URL + types[j].attr("href"),
+                        types[j].text()
+                    )
                 )
-            )
-        }
-        return animeCover3List
-    }
-
-    fun parseLpic(element: Element, imageReferer: String): List<AnimeCover3Bean> {          //搜索
-        val animeCover3List: MutableList<AnimeCover3Bean> = ArrayList()
-        val results: Elements = element.select("ul").select("li")
-        for (i in results.indices) {
-            var cover = results[i].select("a").select("img").attr("src")
-            cover = getCoverUrl(cover, imageReferer)
-            val title = results[i].select("h2").select("a").attr("title")
-            val url = results[i].select("h2").select("a").attr("href")
-            val episode = results[i].select("span").select("font").text()
-            val types = results[i].select("span")[1].text().replace("类型：", "")
-                .replace("类型:", "").split(" ")
-            val animeType: MutableList<AnimeTypeBean> = ArrayList()
-            for (j in types.indices) {
-                if (types[j].isBlank()) continue
-                animeType.add(AnimeTypeBean("", "", types[j]))
             }
             val describe = results[i].select("p").text()
             animeCover3List.add(
                 AnimeCover3Bean(
-                    url,
-                    Api.MAIN_URL + url,
-                    title,
-                    ImageBean("", cover, imageReferer),
-                    episode,
-                    describe,
-                    animeType
+                    route = url,
+                    url = CustomConst.MAIN_URL + url,
+                    title = title,
+                    cover = ImageBean("", cover, imageReferer),
+                    episode = episode,
+                    animeType = animeType,
+                    describe = describe
                 )
             )
         }
@@ -295,13 +319,13 @@ object CustomParseHtmlUtil {
         val results: Elements = element.children()
         var findCurrentPage = false
         for (i in results.indices) {
-            if (results[i].tagName() == "a" && i > 0 && results[i - 1].tagName() == "span")
-                findCurrentPage = true
             if (findCurrentPage) {
+                if (results[i].className() == "a1") return null
                 val url = results[i].attr("href")
                 val title = results[i].text()
-                return PageNumberBean(url, Api.MAIN_URL + url, title)
+                return PageNumberBean(url, CustomConst.MAIN_URL + url, title)
             }
+            if (results[i].tagName() == "span") findCurrentPage = true
         }
         return null
     }
@@ -315,7 +339,8 @@ object CustomParseHtmlUtil {
     }
 
     fun parseMovurls(
-        element: Element, selected: AnimeEpisodeDataBean? = null,
+        element: Element,
+        selected: AnimeEpisodeDataBean? = null
     ): List<AnimeEpisodeDataBean> {
         val animeEpisodeList: MutableList<AnimeEpisodeDataBean> = ArrayList()
         val elements: Elements = element.select("ul").select("li")
@@ -334,13 +359,19 @@ object CustomParseHtmlUtil {
         return animeEpisodeList
     }
 
-    fun parseImg(element: Element, imageReferer: String): List<AnimeCover1Bean> {
+    fun parseImg(
+        element: Element,
+        imageReferer: String
+    ): List<AnimeCover1Bean> {
         val animeShowList: MutableList<AnimeCover1Bean> = ArrayList()
         val elements: Elements = element.select("ul").select("li")
         for (i in elements.indices) {
             val url = elements[i].select("a").attr("href")
             var cover = elements[i].select("a").select("img").attr("src")
-            cover = getCoverUrl(cover, imageReferer)
+            cover = getCoverUrl(
+                cover,
+                imageReferer
+            )
             val title = elements[i].select("[class=tname]").select("a").text()
             var episode = ""
             if (elements[i].select("p").size > 1) {
@@ -348,8 +379,9 @@ object CustomParseHtmlUtil {
             }
             animeShowList.add(
                 AnimeCover1Bean(
-                    url, Api.MAIN_URL + url,
-                    title, ImageBean("", cover, imageReferer), episode
+                    route = url, url = CustomConst.MAIN_URL + url,
+                    title = title, cover = ImageBean("", cover, imageReferer),
+                    episode = episode
                 )
             )
         }
@@ -368,7 +400,7 @@ object CustomParseHtmlUtil {
             }
             cover.startsWith("/") -> {
                 //url不全的情况
-                Api.MAIN_URL + cover
+                CustomConst.MAIN_URL + cover
             }
             else -> cover
         }

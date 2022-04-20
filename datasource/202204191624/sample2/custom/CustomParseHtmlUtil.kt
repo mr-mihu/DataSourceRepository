@@ -1,7 +1,6 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.*
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.route.Router.buildRouteUri
 import com.skyd.imomoe.route.processor.ClassifyActivityProcessor
 import org.jsoup.nodes.Element
@@ -67,7 +66,7 @@ object CustomParseHtmlUtil {
                                 val a = li[l].select("a")
                                 classifyDataList.add(
                                     ClassifyTab1Bean(
-                                        a.attr("href").replace(Api.MAIN_URL, ""),
+                                        a.attr("href").replace(CustomConst.MAIN_URL, ""),
                                         a.attr("href"),
                                         a.text()
                                     )
@@ -96,7 +95,7 @@ object CustomParseHtmlUtil {
                 val episodeUrl = liElements[j].select("span").select("a").attr("href")
                 liList.add(
                     AnimeCover10Bean(
-                        url, Api.MAIN_URL + url,
+                        url, CustomConst.MAIN_URL + url,
                         title, AnimeEpisodeDataBean("", episodeTitle, episodeUrl)
                     )
                 )
@@ -119,7 +118,7 @@ object CustomParseHtmlUtil {
                 val episodeUrl = liElements[j].select("span").select("a").attr("href")
                 liList.add(
                     AnimeCover12Bean(
-                        url, Api.MAIN_URL + url, title,
+                        url, CustomConst.MAIN_URL + url, title,
                         AnimeEpisodeDataBean("", episodeTitle, episodeUrl)
                     )
                 )
@@ -159,12 +158,12 @@ object CustomParseHtmlUtil {
             }
             animeShowList.add(
                 AnimeCover5Bean(
-                    url, Api.MAIN_URL + url,
+                    url, CustomConst.MAIN_URL + url,
                     title,
                     AnimeAreaBean(ClassifyActivityProcessor.route.buildRouteUri {
                         appendQueryParameter("partUrl", areaUrl)
                         appendQueryParameter("classifyTitle", title)
-                    }.toString(), Api.MAIN_URL + areaUrl, areaTitle),
+                    }.toString(), CustomConst.MAIN_URL + areaUrl, areaTitle),
                     date, AnimeEpisodeDataBean("", episodeTitle, episodeUrl),
                 )
             )
@@ -182,7 +181,7 @@ object CustomParseHtmlUtil {
             val title = elements[i].select("p").select("a").text()
             animeShowList.add(
                 AnimeCover4Bean(
-                    url, Api.MAIN_URL + url, title,
+                    url, CustomConst.MAIN_URL + url, title,
                     ImageBean("", cover, imageReferer)
                 )
             )
@@ -212,7 +211,7 @@ object CustomParseHtmlUtil {
             animeCover3List.add(
                 AnimeCover3Bean(
                     url,
-                    Api.MAIN_URL + url,
+                    CustomConst.MAIN_URL + url,
                     title,
                     ImageBean("", cover, imageReferer),
                     episode,
@@ -244,7 +243,7 @@ object CustomParseHtmlUtil {
             animeCover3List.add(
                 AnimeCover3Bean(
                     url,
-                    Api.MAIN_URL + url,
+                    CustomConst.MAIN_URL + url,
                     title,
                     ImageBean("", cover, imageReferer),
                     episode,
@@ -276,7 +275,7 @@ object CustomParseHtmlUtil {
             animeCover3List.add(
                 AnimeCover3Bean(
                     url,
-                    Api.MAIN_URL + url,
+                    CustomConst.MAIN_URL + url,
                     title,
                     ImageBean("", cover, imageReferer),
                     episode,
@@ -300,7 +299,7 @@ object CustomParseHtmlUtil {
             if (findCurrentPage) {
                 val url = results[i].attr("href")
                 val title = results[i].text()
-                return PageNumberBean(url, Api.MAIN_URL + url, title)
+                return PageNumberBean(url, CustomConst.MAIN_URL + url, title)
             }
         }
         return null
@@ -348,7 +347,7 @@ object CustomParseHtmlUtil {
             }
             animeShowList.add(
                 AnimeCover1Bean(
-                    url, Api.MAIN_URL + url,
+                    url, CustomConst.MAIN_URL + url,
                     title, ImageBean("", cover, imageReferer), episode
                 )
             )
@@ -368,7 +367,7 @@ object CustomParseHtmlUtil {
             }
             cover.startsWith("/") -> {
                 //url不全的情况
-                Api.MAIN_URL + cover
+                CustomConst.MAIN_URL + cover
             }
             else -> cover
         }

@@ -3,7 +3,6 @@ package com.skyd.imomoe.model.impls.custom
 import android.app.Activity
 import android.view.View
 import com.skyd.imomoe.bean.*
-import com.skyd.imomoe.config.Api.Companion.MAIN_URL
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IPlayModel
 import com.skyd.imomoe.util.html.source.GettingCallback
@@ -48,7 +47,7 @@ class CustomPlayModel : IPlayModel {
         val title = AnimeTitleBean("", "")
         val episode = AnimeEpisodeDataBean("", "")
         val playBean = PlayBean("", title, episode, playBeanDataList)
-        val url = MAIN_URL + partUrl
+        val url = CustomConst.MAIN_URL + partUrl
         val document = JsoupUtil.getDocument(url)
         return suspendCancellableCoroutine { cancellableContinuation ->
             val activity = mActivity?.get()
@@ -89,7 +88,7 @@ class CustomPlayModel : IPlayModel {
                                             )
                                             continue
                                         } else if (iframeSrc.startsWith("/")) iframeSrc =
-                                            MAIN_URL + iframeSrc
+                                            CustomConst.MAIN_URL + iframeSrc
                                         getVideoUrl(iframeSrc, object : GettingCallback {
                                             override fun onGettingSuccess(
                                                 webView: View?, html: String
@@ -214,7 +213,7 @@ class CustomPlayModel : IPlayModel {
         partUrl: String
     ): AnimeEpisodeDataBean = suspendCancellableCoroutine { cancellableContinuation ->
         val animeEpisodeDataBean = AnimeEpisodeDataBean("", "")
-        val url = MAIN_URL + partUrl
+        val url = CustomConst.MAIN_URL + partUrl
         val activity = mActivity?.get()
         if (activity == null || activity.isDestroyed) throw Exception("activity不存在或状态错误")
         activity.runOnUiThread {
@@ -255,7 +254,7 @@ class CustomPlayModel : IPlayModel {
                                             cancellableContinuation.resume(animeEpisodeDataBean)
                                         continue
                                     } else if (iframeSrc.startsWith("/")) iframeSrc =
-                                        MAIN_URL + iframeSrc
+                                        CustomConst.MAIN_URL + iframeSrc
                                     getVideoUrl(iframeSrc, object : GettingCallback {
                                         override fun onGettingSuccess(
                                             webView: View?, html: String
@@ -293,7 +292,7 @@ class CustomPlayModel : IPlayModel {
 
     override suspend fun getAnimeCoverImageBean(partUrl: String): ImageBean? {
         try {
-            val url = MAIN_URL + CustomUtil().getDetailLinkByEpisodeLink(partUrl)
+            val url = CustomConst.MAIN_URL + CustomUtil().getDetailLinkByEpisodeLink(partUrl)
             val document = JsoupUtil.getDocument(url)
             //番剧头部信息
             val area: Elements = document.getElementsByClass("area")
@@ -332,7 +331,7 @@ class CustomPlayModel : IPlayModel {
 
     override suspend fun getAnimeDownloadUrl(partUrl: String): String? =
         suspendCancellableCoroutine { cancellableContinuation ->
-            val url = MAIN_URL + partUrl
+            val url = CustomConst.MAIN_URL + partUrl
             val activity = mActivity?.get()
             if (activity == null || activity.isDestroyed) throw Exception("activity不存在或状态错误")
             activity.runOnUiThread {
@@ -363,7 +362,7 @@ class CustomPlayModel : IPlayModel {
                                             cancellableContinuation.resume(videoUrl)
                                             continue
                                         } else if (iframeSrc.startsWith("/")) iframeSrc =
-                                            MAIN_URL + iframeSrc
+                                            CustomConst.MAIN_URL + iframeSrc
                                         getVideoUrl(iframeSrc, object : GettingCallback {
                                             override fun onGettingSuccess(
                                                 webView: View?, html: String

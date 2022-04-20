@@ -4,11 +4,14 @@ import com.skyd.imomoe.BuildConfig
 import com.skyd.imomoe.model.interfaces.IConst
 
 class CustomConst : IConst {
-    val ANIME_RANK: String = "/ranklist/"
-    val ANIME_PLAY: String = "/vp/"
-    val ANIME_DETAIL: String = "/showp/"
-    val ANIME_SEARCH: String = "/s_all"
-    val ANIME_LINK: String = "/link/"
+    companion object {
+        val ANIME_RANK: String = "/ranklist/"
+        val ANIME_PLAY: String = "/vp/"
+        val ANIME_DETAIL: String = "/showp/"
+        val ANIME_SEARCH: String = "/s_all"
+        val ANIME_LINK: String = "/link/"
+        val MAIN_URL: String by lazy { CustomConst().MAIN_URL }
+    }
 
     override val MAIN_URL: String
         get() = BuildConfig.CUSTOM_DATA_MAIN_URL

@@ -1,7 +1,6 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.*
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IAnimeDetailModel
 import com.skyd.imomoe.route.Router.buildRouteUri
@@ -15,7 +14,7 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
         val animeDetailList: ArrayList<Any> = ArrayList()
         val cover = ImageBean("", "", "")
         var title = ""
-        val url = Api.MAIN_URL + partUrl
+        val url = CustomConst.MAIN_URL + partUrl
         val document = JsoupUtil.getDocument(url)
         //番剧头部信息
         val area: Elements = document.getElementsByClass("area")
@@ -71,7 +70,7 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
                                                         typeElements[l].text()
                                                     )
                                                 }.toString(),
-                                                Api.MAIN_URL + typeElements[l].attr("href"),
+                                                CustomConst.MAIN_URL + typeElements[l].attr("href"),
                                                 typeElements[l].text()
                                             )
                                         )
@@ -90,7 +89,7 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
                                                         tagElements[l].text()
                                                     )
                                                 }.toString(),
-                                                Api.MAIN_URL + tagElements[l].attr("href"),
+                                                CustomConst.MAIN_URL + tagElements[l].attr("href"),
                                                 tagElements[l].text()
                                             )
                                         )

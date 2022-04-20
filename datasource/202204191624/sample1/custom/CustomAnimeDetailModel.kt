@@ -1,8 +1,8 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.*
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.util.JsoupUtil
+import com.skyd.imomoe.model.impls.custom.ParseHtmlUtil.parseBotit
 import com.skyd.imomoe.model.interfaces.IAnimeDetailModel
 import com.skyd.imomoe.route.Router.buildRouteUri
 import com.skyd.imomoe.route.processor.ClassifyActivityProcessor
@@ -15,7 +15,7 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
         val animeDetailList: ArrayList<Any> = ArrayList()
         val cover = ImageBean("", "", "")
         var title = ""
-        val url = Api.MAIN_URL + partUrl
+        val url = CustomConst.MAIN_URL + partUrl
         val document = JsoupUtil.getDocument(url)
         //番剧头部信息
         val area: Elements = document.getElementsByClass("area")
@@ -37,9 +37,8 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
                         for (k in fireLChildren.indices) {
                             when (fireLChildren[k].className()) {
                                 "thumb l" -> {
-                                    cover.url = CustomParseHtmlUtil.getCoverUrl(
-                                        fireLChildren[k].select("img").attr("src"), url
-                                    )
+                                    cover.url = fireLChildren[k]
+                                        .select("img").attr("src")
                                     cover.referer = url
                                 }
                                 "rate r" -> {
@@ -71,7 +70,7 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
                                                         typeElements[l].text()
                                                     )
                                                 }.toString(),
-                                                Api.MAIN_URL + typeElements[l].attr("href"),
+                                                CustomConst.MAIN_URL + typeElements[l].attr("href"),
                                                 typeElements[l].text()
                                             )
                                         )
@@ -90,44 +89,40 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
                                                         tagElements[l].text()
                                                     )
                                                 }.toString(),
-                                                Api.MAIN_URL + tagElements[l].attr("href"),
+                                                CustomConst.MAIN_URL + tagElements[l].attr("href"),
                                                 tagElements[l].text()
                                             )
                                         )
                                     }
                                 }
                                 "tabs", "tabs noshow" -> {     //播放列表+header
-                                    val menu0 = fireLChildren[k].select("[class=menu0]")[0]
-                                    val main0 = fireLChildren[k].select("[class=main0]")[0]
-                                    val li = menu0.select("li")
-                                    var movurl = main0.select("[class=movurl]")
-                                    if (movurl.size == 0)
-                                        movurl = main0.select("[class=movurl movurl_pan]")
-                                    for (l: Int in li.indices) {
-                                        if (movurl[l].select("ul").select("li").size == 0) continue
-                                        animeDetailList.add(Header1Bean("", li[l].text()))
-
-                                        animeDetailList.add(
-                                            HorizontalRecyclerView1Bean(
-                                                "",
-                                                CustomParseHtmlUtil.parseMovurls(movurl[l])
-                                            )
-                                        )
-                                    }
-                                }
-                                "botit" -> {     //其它header
                                     animeDetailList.add(
                                         Header1Bean(
                                             "",
-                                            CustomParseHtmlUtil.parseBotit(fireLChildren[k])
+                                            fireLChildren[k].select("[class=menu0]")
+                                                .select("li").text()
                                         )
+                                    )
+
+                                    animeDetailList.add(
+                                        HorizontalRecyclerView1Bean(
+                                            "",
+                                            ParseHtmlUtil.parseMovurls(
+                                                fireLChildren[k].select("[class=main0]")
+                                                    .select("[class=movurl]")[0]
+                                            )
+                                        )
+                                    )
+                                }
+                                "botit" -> {     //其它header
+                                    animeDetailList.add(
+                                        Header1Bean("", parseBotit(fireLChildren[k]))
                                     )
                                 }
                                 "dtit" -> {     //其它header
                                     animeDetailList.add(
                                         Header1Bean(
-                                            "",
-                                            CustomParseHtmlUtil.parseDtit(fireLChildren[k])
+                                            "", ParseHtmlUtil.parseDtit(fireLChildren[k])
                                         )
                                     )
                                 }
@@ -141,7 +136,7 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
                                 }
                                 "img" -> {         //系列动漫推荐
                                     animeDetailList.addAll(
-                                        CustomParseHtmlUtil.parseImg(fireLChildren[k], url)
+                                        ParseHtmlUtil.parseImg(fireLChildren[k], url)
                                     )
                                 }
                             }

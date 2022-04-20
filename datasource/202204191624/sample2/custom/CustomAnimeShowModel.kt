@@ -3,7 +3,6 @@ package com.skyd.imomoe.model.impls.custom
 import com.skyd.imomoe.bean.Banner1Bean
 import com.skyd.imomoe.bean.Header1Bean
 import com.skyd.imomoe.bean.PageNumberBean
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IAnimeShowModel
 import org.jsoup.select.Elements
@@ -12,7 +11,7 @@ class CustomAnimeShowModel : IAnimeShowModel {
     override suspend fun getAnimeShowData(
         partUrl: String
     ): Pair<ArrayList<Any>, PageNumberBean?> {
-        val url = Api.MAIN_URL + partUrl
+        val url = CustomConst.MAIN_URL + partUrl
         var pageNumberBean: PageNumberBean? = null
         val document = JsoupUtil.getDocument(url)
         val animeShowList: ArrayList<Any> = ArrayList()

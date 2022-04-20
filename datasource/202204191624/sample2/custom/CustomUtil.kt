@@ -5,9 +5,8 @@ import com.skyd.imomoe.util.Util
 
 class CustomUtil : IUtil {
     override fun getDetailLinkByEpisodeLink(episodeUrl: String): String {
-        val const = CustomConst()
-        return const.ANIME_DETAIL + episodeUrl
-            .replaceFirst(const.ANIME_PLAY, "")
+        return CustomConst.ANIME_DETAIL + episodeUrl
+            .replaceFirst(CustomConst.ANIME_PLAY, "")
             .replaceFirst(Regex("-.*-.*\\.html"), "") + Util.getWebsiteLinkSuffix()
     }
 }

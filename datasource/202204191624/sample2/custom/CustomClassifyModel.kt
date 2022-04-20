@@ -4,7 +4,6 @@ import android.app.Activity
 import android.view.View
 import com.skyd.imomoe.bean.ClassifyBean
 import com.skyd.imomoe.bean.PageNumberBean
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.config.Const
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IClassifyModel
@@ -36,7 +35,7 @@ class CustomClassifyModel : IClassifyModel {
     ): Pair<ArrayList<Any>, PageNumberBean?> {
         val classifyList: ArrayList<Any> = ArrayList()
         var pageNumberBean: PageNumberBean? = null
-        val url: String = (Api.MAIN_URL + partUrl).toEncodedUrl()
+        val url: String = (CustomConst.MAIN_URL + partUrl).toEncodedUrl()
         val document = JsoupUtil.getDocument(url)
         val areaElements: Elements = document.getElementsByClass("area")
         for (i in areaElements.indices) {
@@ -70,7 +69,7 @@ class CustomClassifyModel : IClassifyModel {
             val activity = mActivity?.get()
             if (activity == null || activity.isDestroyed) throw Exception("activity不存在或状态错误")
             activity.runOnUiThread {
-                GettingUtil.instance.activity(activity).url(Api.MAIN_URL + "/list/").start(
+                GettingUtil.instance.activity(activity).url(CustomConst.MAIN_URL + "/list/").start(
                     object : GettingCallback {
                         override fun onGettingSuccess(webView: View?, html: String) {
                             GettingUtil.instance.release()

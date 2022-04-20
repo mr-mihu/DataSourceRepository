@@ -1,7 +1,6 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.PageNumberBean
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IRankListModel
 import org.jsoup.select.Elements
@@ -21,8 +20,7 @@ class CustomRankListModel : IRankListModel {
     }
 
     private suspend fun getAllRankData(partUrl: String) {
-        val const = CustomConst()
-        val document = JsoupUtil.getDocument(Api.MAIN_URL + partUrl)
+        val document = JsoupUtil.getDocument(CustomConst.MAIN_URL + partUrl)
         val areaChildren: Elements = document.select("[class=area]")[0].children()
         for (i in areaChildren.indices) {
             when (areaChildren[i].className()) {
@@ -34,7 +32,7 @@ class CustomRankListModel : IRankListModel {
                                 rankList.addAll(
                                     CustomParseHtmlUtil.parseRankListLpic(
                                         firsLChildren[k],
-                                        Api.MAIN_URL + const.ANIME_RANK
+                                        CustomConst.MAIN_URL + CustomConst.ANIME_RANK
                                     )
                                 )
                             }
@@ -51,7 +49,7 @@ class CustomRankListModel : IRankListModel {
 
     private suspend fun getWeekRankData() {
         bgTimes = 0
-        val url = Api.MAIN_URL
+        val url = CustomConst.MAIN_URL
         val document = JsoupUtil.getDocument(url)
         val areaChildren: Elements = document.select("[class=area]")[0].children()
         for (i in areaChildren.indices) {

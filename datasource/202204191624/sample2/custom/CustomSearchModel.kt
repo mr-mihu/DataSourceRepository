@@ -11,12 +11,11 @@ class CustomSearchModel : ISearchModel {
         keyWord: String,
         partUrl: String
     ): Pair<ArrayList<Any>, PageNumberBean?> {
-        val const = CustomConst()
         var pageNumberBean: PageNumberBean? = null
         val searchResultList: ArrayList<Any> = ArrayList()
         val url = if (partUrl.isBlank())
-            "${const.MAIN_URL}${const.ANIME_SEARCH}?kw=${Util.getEncodedUrl(keyWord)}"
-        else const.MAIN_URL + partUrl
+            "${CustomConst.MAIN_URL}${CustomConst.ANIME_SEARCH}?kw=${Util.getEncodedUrl(keyWord)}"
+        else CustomConst.MAIN_URL + partUrl
         val document = JsoupUtil.getDocument(url)
         val fireL = document.getElementsByClass("area").select("[class=fire l]")
         val lpic: Elements = fireL.select("[class=lpic]")

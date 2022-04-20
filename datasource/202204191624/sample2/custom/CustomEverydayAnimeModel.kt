@@ -1,7 +1,6 @@
 package com.skyd.imomoe.model.impls.custom
 
 import com.skyd.imomoe.bean.*
-import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.model.interfaces.IEverydayAnimeModel
 import org.jsoup.select.Elements
@@ -12,7 +11,7 @@ class CustomEverydayAnimeModel : IEverydayAnimeModel {
         val tabList = ArrayList<TabBean>()
         var header = ""
         val everydayAnimeList: ArrayList<List<Any>> = ArrayList()
-        val document = JsoupUtil.getDocument(Api.MAIN_URL)
+        val document = JsoupUtil.getDocument(CustomConst.MAIN_URL)
         val areaChildren: Elements = document.select("[class=area]")[0].children()
         for (i in areaChildren.indices) {
             when (areaChildren[i].className()) {
