@@ -1,0 +1,26 @@
+{
+  "dataSourceList": [
+    {
+      "name": "CustomDataSource1",
+      "interfaceVersion": "202204191624",
+      "versionName": "1.1.0",
+      "versionCode": 6,
+      "author": "默认",
+      "icon": "/datasource/202204191624/sample1/icon.png",
+      "describe": "默认",
+      "publicAt": 1650381276713,
+      "downloadUrl": "/datasource/202204191624/sample1/CustomDataSource1.ads"
+    },
+    {
+      "name": "CustomDataSource2",
+      "interfaceVersion": "202204191624",
+      "versionName": "1.1.0",
+      "versionCode": 5,
+      "author": "默认",
+      "icon": "",
+      "describe": "默认",
+      "publicAt": 1650381276713,
+      "downloadUrl": "/datasource/202204191624/sample2/CustomDataSource2.ads"
+    }
+  ]
+}
