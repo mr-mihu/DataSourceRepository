@@ -54,14 +54,9 @@ class CustomRouter : IRouter {
             uriString.startsWith(CustomConst.ANIME_PLAY) -> {
                 val playCode = uriString.getSubString("\\/vp\\/", "\\.")[0].split("-")
                 if (playCode.size >= 2) {
-                    var detailPartUrl =
-                        uriString.substringAfter(CustomConst.ANIME_DETAIL, "")
-                    detailPartUrl = CustomConst.ANIME_DETAIL + detailPartUrl
+                    val detailPartUrl = CustomUtil().getDetailLinkByEpisodeLink(uriString)
                     PlayActivityProcessor.route.buildRouteUri {
-                        appendQueryParameter(
-                            "partUrl",
-                            uriString.substringBefore(CustomConst.ANIME_DETAIL)
-                        )
+                        appendQueryParameter("partUrl", uriString)
                         appendQueryParameter("detailPartUrl", detailPartUrl)
                     }.route(context)
                 } else {
