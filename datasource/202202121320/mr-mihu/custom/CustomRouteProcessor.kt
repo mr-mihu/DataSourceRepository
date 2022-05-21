@@ -8,12 +8,16 @@ import com.skyd.imomoe.config.Const.ActionUrl.Companion.ANIME_CLASSIFY
 import com.skyd.imomoe.model.interfaces.IRouteProcessor
 import com.skyd.imomoe.util.Util.getSubString
 import com.skyd.imomoe.util.showToast
-import com.skyd.imomoe.view.activity.*
+import com.skyd.imomoe.view.activity.AnimeDetailActivity
+import com.skyd.imomoe.view.activity.ClassifyActivity
+import com.skyd.imomoe.view.activity.PlayActivity
+import com.skyd.imomoe.view.activity.SearchActivity
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLDecoder
 
 class CustomRouteProcessor : IRouteProcessor {
+
     override fun process(context: Context, actionUrl: String): Boolean {
         val decodeUrl = URLDecoder.decode(actionUrl, "UTF-8")
         val const = CustomConst()
@@ -122,4 +126,5 @@ class CustomRouteProcessor : IRouteProcessor {
         }
         return solved
     }
+
 }
