@@ -1,17 +1,14 @@
 package com.skyd.imomoe.model.impls.custom
 
 import android.app.Activity
-import android.content.Intent
 import com.skyd.imomoe.bean.ClassifyBean
 import com.skyd.imomoe.bean.ClassifyTab1Bean
 import com.skyd.imomoe.bean.PageNumberBean
 import com.skyd.imomoe.config.Api
-import com.skyd.imomoe.config.UnknownActionUrl
 import com.skyd.imomoe.model.interfaces.IClassifyModel
 import com.skyd.imomoe.model.util.JsoupUtil
 import com.skyd.imomoe.util.Util.toEncodedUrl
 import com.skyd.imomoe.util.html.source.web.GettingUtil
-import com.skyd.imomoe.view.activity.ClassifyActivity
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import java.lang.ref.SoftReference
@@ -50,40 +47,40 @@ class CustomClassifyModel : IClassifyModel {
         val classifyTabList: ArrayList<ClassifyBean> = ArrayList()
         var document = JsoupUtil.getDocument(Api.MAIN_URL)
 
-        var fortElements:Elements = document.select("body>#menu>.area dl>dt>a>font")
+        var fortElements: Elements = document.select("body>#menu>.area dl>dt>a>font")
 
         for (fort in fortElements) {
             //过滤不需要的数据
-            var parent = fort.parent()?:continue
-            if("a"!=parent.tagName()) continue
-            if("#"!=parent.attr("href"))continue
+            var parent = fort.parent() ?: continue
+            if ("a" != parent.tagName()) continue
+            if ("#" != parent.attr("href")) continue
 
             var title = fort.text()
-            if(title.contains("小说")||title.contains("图片"))continue
+            if (title.contains("小说") || title.contains("图片")) continue
             var classifyDataList = getClassifyDataList(fort)
             classifyTabList.add(
-                ClassifyBean("",title, classifyDataList)
+                ClassifyBean("", title, classifyDataList)
             )
         }
 
-        val activity = mActivity?.get()
-        if (activity == null || activity.isDestroyed) throw Exception("activity不存在或状态错误")
-        activity.runOnUiThread {
-            classifyTabList.forEach {
-                it.classifyDataList.forEach { item ->
-                    UnknownActionUrl.actionMap[item.actionUrl] =
-                        object : UnknownActionUrl.Action {
-                            override fun action() {
-                                activity.startActivity(
-                                    Intent(activity, ClassifyActivity::class.java)
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        .putExtra("partUrl", item.actionUrl)
-                                )
-                            }
-                        }
-                }
-            }
-        }
+//        val activity = mActivity?.get()
+//        if (activity == null || activity.isDestroyed) throw Exception("activity不存在或状态错误")
+//        activity.runOnUiThread {
+//            classifyTabList.forEach {
+//                it.classifyDataList.forEach { item ->
+//                    UnknownActionUrl.actionMap[item.actionUrl] =
+//                        object : UnknownActionUrl.Action {
+//                            override fun action() {
+//                                activity.startActivity(
+//                                    Intent(activity, ClassifyActivity::class.java)
+//                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//                                        .putExtra("partUrl", item.actionUrl)
+//                                )
+//                            }
+//                        }
+//                }
+//            }
+//        }
 
         return classifyTabList
     }
@@ -93,10 +90,10 @@ class CustomClassifyModel : IClassifyModel {
      */
     private fun getClassifyDataList(fort: Element?): ArrayList<ClassifyTab1Bean> {
         val classifyDataList = ArrayList<ClassifyTab1Bean>()
-        if(fort==null) return classifyDataList
+        if (fort == null) return classifyDataList
 
-        var parent = fort.parent()?.parent()?:return classifyDataList
-        var menuList = parent.nextElementSibling()?:return classifyDataList
+        var parent = fort.parent()?.parent() ?: return classifyDataList
+        var menuList = parent.nextElementSibling() ?: return classifyDataList
         var aTabs = menuList.select("font>dd>a")
 
         for (a in aTabs) {

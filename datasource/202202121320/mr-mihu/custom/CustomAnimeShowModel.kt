@@ -1,10 +1,11 @@
 package com.skyd.imomoe.model.impls.custom
 
-import com.skyd.imomoe.bean.Header1Bean
+import android.widget.Toast
 import com.skyd.imomoe.bean.PageNumberBean
 import com.skyd.imomoe.config.Api
 import com.skyd.imomoe.model.interfaces.IAnimeShowModel
 import com.skyd.imomoe.model.util.JsoupUtil
+import com.skyd.imomoe.util.showToast
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
@@ -16,27 +17,23 @@ class CustomAnimeShowModel : IAnimeShowModel {
         var pageNumberBean: PageNumberBean? = null
         val animeShowList: ArrayList<Any> = ArrayList()
 
-        if("/" == partUrl){
-            //首页为错误页，需要从新获取最新地址
-            updateHomeDate(animeShowList)
+        if ("/" == partUrl) {
+            //首页为错误页
+            "数据源获取失败！".showToast(Toast.LENGTH_LONG)
+            return Pair(animeShowList, pageNumberBean)
         }
 
-        try {
-            val document = JsoupUtil.getDocument(url)
-            //获取节点
-            var element = document.body()
+        val document = JsoupUtil.getDocument(url)
+        //获取节点
+        var element = document.body()
 
-            //分页数据
-            var pageElement: Elements = element.select("div.pagination")
-            //有分页
-            pageNumberBean = CustomParseHtmlUtil.parseNextPages(pageElement)
+        //分页数据
+        var pageElement: Elements = element.select("div.pagination")
+        //有分页
+        pageNumberBean = CustomParseHtmlUtil.parseNextPages(pageElement)
 
-            //非首页标签
-            setNotHomeDate(partUrl, element, animeShowList)
-        }catch (e:Exception){
-            //请求失败，则从新获取最新地址
-            updateHomeDate(animeShowList)
-        }
+        //非首页标签
+        setNotHomeDate(partUrl, element, animeShowList)
 
         return Pair(animeShowList, pageNumberBean)
     }
@@ -60,33 +57,9 @@ class CustomAnimeShowModel : IAnimeShowModel {
             //视频数据列表
             animeShowList.addAll(CustomParseHtmlUtil.parseLVideo(listElements[i], url))
             //TODO 未完成 图片数据列表
-            animeShowList.addAll(CustomParseHtmlUtil.parseLPic(listElements[i], url))
+//            animeShowList.addAll(CustomParseHtmlUtil.parseLPic(listElements[i], url))
             //TODO 未完成 小说数据列表
 //            animeShowList.addAll(ParseHtmlUtil.parseLFiction(listElements[i], url))
-        }
-    }
-
-    /**
-     * 首页tab数据
-     */
-    private fun updateHomeDate(
-        animeShowList: ArrayList<Any>
-    ) {
-
-        val url = Api.MAIN_URL
-
-        //初始化首页地址
-        println("初始地址：${Api.MAIN_URL}")
-        CustomUtil().initApi(Api.MAIN_URL)
-        if (url != Api.MAIN_URL) {
-            println("更新地址：${Api.MAIN_URL}")
-            animeShowList.add(Header1Bean("", "更新成功"))
-            animeShowList.add(Header1Bean("", "正在重启app"))
-            //重启
-            com.skyd.imomoe.util.Util.restartApp()
-        } else {
-            animeShowList.add(Header1Bean("", "请使用其他选项卡↑"))
-            animeShowList.add(Header1Bean("", "无法使用则下拉刷新"))
         }
     }
 }

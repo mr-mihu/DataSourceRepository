@@ -24,10 +24,10 @@ class CustomAnimeDetailModel : IAnimeDetailModel {
 
         /* 每行模块数据 */
         //封面和类型相关信息
-        CustomParseHtmlUtil.addInfoBean(url,element,animeDetailList)
+        CustomParseHtmlUtil.addInfoBean(url, element, animeDetailList)
 
         //播放器和集列表
-        CustomParseHtmlUtil.getPlayerRowsData(url,element,animeDetailList)
+        CustomParseHtmlUtil.getPlayerRowsData(url, element, animeDetailList)
 
         return Triple(cover, title, animeDetailList)
     }

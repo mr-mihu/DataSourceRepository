@@ -12,12 +12,11 @@ class CustomSearchModel : ISearchModel {
         keyWord: String,
         partUrl: String
     ): Pair<ArrayList<Any>, PageNumberBean?> {
-        val const = CustomConst()
         var pageNumberBean: PageNumberBean? = null
         val searchResultList: ArrayList<Any> = ArrayList()
 
         val url = if (partUrl.isBlank())
-            "${Api.MAIN_URL}${const.actionUrl.ANIME_SEARCH()}-------------.html?wd=${keyWord.toEncodedUrl()}"
+            "${Api.MAIN_URL}${CustomConst().actionUrl.ANIME_SEARCH()}-------------.html?wd=${keyWord.toEncodedUrl()}"
         else Api.MAIN_URL + partUrl
 
         val element = JsoupUtil.getDocument(url)

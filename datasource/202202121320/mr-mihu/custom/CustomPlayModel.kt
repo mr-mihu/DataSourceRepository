@@ -16,7 +16,11 @@ import com.skyd.imomoe.util.showToast
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.lang.ref.SoftReference
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlin.coroutines.resume
 
 
@@ -24,24 +28,6 @@ class CustomPlayModel : IPlayModel {
 
     private var mActivity: SoftReference<Activity>? = null
 
-
-    private fun getVideoUrl(iframeSrc: String, callback: GettingCallback) {
-        val activity = mActivity?.get()
-        if (activity == null || activity.isDestroyed) throw Exception("activity不存在或状态错误")
-        activity.runOnUiThread {
-            GettingUtil.instance.activity(activity)
-                .url(iframeSrc).start(object : GettingCallback {
-                    override fun onGettingSuccess(webView: View?, html: String) {
-                        callback.onGettingSuccess(webView, html)
-                    }
-
-                    override fun onGettingError(webView: View?, url: String?, errorCode: Int) {
-                        callback.onGettingError(webView, url, errorCode)
-                    }
-
-                })
-        }
-    }
 
     override suspend fun getPlayData(
         partUrl: String,
@@ -99,7 +85,8 @@ class CustomPlayModel : IPlayModel {
 
         //加密视频
         if (encrypt == 9) {
-            "视频损坏或不支持解析！".showToast(Toast.LENGTH_LONG)
+            "请点击右上角使用外部播放器播放！".showToast(Toast.LENGTH_LONG)
+//            Util.openVideoByExternalPlayer(Utils.getAppContext(),videoUrl)
             //解析video地址
             var newUrl: String = suspendCancellableCoroutine {
                 val activity = mActivity?.get()
@@ -113,8 +100,8 @@ class CustomPlayModel : IPlayModel {
                                 var videoM3u8Url =
                                     iframe.body().select("div.dplayer-video-wrap video")
                                         .attr("ppp-src")
-                                println("解析结果：${videoUrl}")
-                                var newUrl = parseM3u8Url(videoM3u8Url)
+                                println("解析视频地址：${videoUrl}")
+                                var newUrl = parseM3u8Url(videoM3u8Url, videoUrl)
                                 it.resume(newUrl)
                             }
 
@@ -131,55 +118,64 @@ class CustomPlayModel : IPlayModel {
             }
 
             animeEpisodeDataBean.videoUrl = newUrl
+
         }
         println("视频地址：${animeEpisodeDataBean.videoUrl}")
     }
 
-    private fun parseM3u8Url(videoUrl: String): String {
-        var newurl = "$videoUrl?skipl=1";
+    private fun parseM3u8Url(videoUrl: String, videoUrlSrc: String): String {
+        var newurl = "$videoUrl?skipl=1"
         if (videoUrl.indexOf("?") > 0) {
             newurl = "$videoUrl&skipl=1"
         }
-//        var myString = readTxt(newurl)
-//        val parser = MasterPlaylistParser()
-//        val playlist = parser.readPlaylist(myString)
+
+        //目前只适配ddyunbo.com域名的解析
+        if (videoUrlSrc.contains("ddyunbo") && newurl.startsWith("/")) {
+            var prefix = ""
+            if (videoUrlSrc.indexOf("http") != -1) {
+                /* https://vip5.ddyunbo.com/share/CZyUH5qWq6jnFRgr */
+                //协议：https://
+                var http = videoUrlSrc.substring(0, (videoUrlSrc.indexOf("//") + 2))
+                //域名：vip5.ddyunbo.com
+                var domainName = videoUrlSrc.substringAfter(http).substringBefore("/")
+                //拼接出完整域名：https://vip5.ddyunbo.com
+                prefix = http + domainName
+            }
+            newurl = prefix + newurl
+            newurl = parseDdyunboUrl(newurl, prefix)
+
+        }
         return newurl
     }
 
-//    protected fun readTxt(urlStr: String): String? {
-//        try {
-//            //从params中获取传过来的URL
-//            val url = URL(urlStr)
-//            Log.e("TAG", urlStr)
-//            //使用URLconnection的子类HttpURLconnection来请求连接更好
-//            val conn = url.openConnection() as HttpURLConnection
-//            conn.doOutput = true //设置要读取文件
-//            conn.connectTimeout = 10000 //设置连接的最长时间
-//            val `is` = conn.inputStream //获取连接的输入流
-//            val baos = ByteArrayOutputStream() //创建一个高速的输出流来读取输入流
-//            //对数据的读取（边读边取）
-//            var len = 0
-//            val buf = ByteArray(1024)
-//            while (`is`.read(buf).also { len = it } != -1) {
-//                baos.write(buf, 0, len)
-//            }
-//            //获得的输出流变成String类型的字符串，用于最后的返回
-//            val result = String(baos.toByteArray()) //设置编码格式
-//            //返回的是获取的一大串文本资源源码
-//            Log.e("TAG", "-------------->\t\n$result")
-//            return result
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//        return null
-//    }
+    private fun parseDdyunboUrl(videoUrl: String, prefix: String): String {
+        var readTxt = readTxt(videoUrl)
+        var lineList = readTxt.split("\n")
+        if (lineList.size >= 3) {
+            return prefix + lineList[2]
+        }
+        return videoUrl
+    }
+
+    private fun readTxt(url: String): String {
+        val inputstreamreader = BufferedReader(InputStreamReader(URL(url).openStream()))
+        try {
+            return inputstreamreader.readText()
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        } finally {
+            inputstreamreader.close()
+        }
+        "读取失败,请检查文件名称及文件是否存在!".showToast(Toast.LENGTH_LONG)
+        return ""
+    }
 
     override suspend fun playAnotherEpisode(partUrl: String): AnimeEpisodeDataBean {
         val animeEpisodeDataBean = AnimeEpisodeDataBean("", "")
         val url = Api.MAIN_URL + partUrl
         val document = JsoupUtil.getDocument(url)
         getVideoUrl(partUrl, document, animeEpisodeDataBean)
-        return animeEpisodeDataBean;
+        return animeEpisodeDataBean
     }
 
     override suspend fun getAnimeCoverImageBean(detailPartUrl: String): ImageBean? {
